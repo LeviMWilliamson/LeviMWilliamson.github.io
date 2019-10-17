@@ -1,0 +1,698 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset='utf-8'/>
+    <title>
+      [._1337._]
+    </title>
+    <style>
+      body
+      {
+        padding: 0;
+        margin: 0;
+        overflow:hidden;
+      }
+      canvas
+      {
+        padding:0;
+        margin:0;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      
+      var canvas = document.createElement("canvas");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      canvas.appendChild(document.createTextNode('Your browser does not support the canvas API.'));
+      document.body.appendChild(canvas);
+     
+      var ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+      ctx.translate(0.5,0.5);
+      ctx.font = "16px monospace";
+     
+      var world_matrix = new Array(512);
+      for(let i=0; i<world_matrix.length; i++)
+      {
+        world_matrix[i] = new Array(512);
+        for(let j=0; j<world_matrix[i].length; j++)
+          world_matrix[i][j] = ' ';
+      }
+
+
+      function generateIsland(X,Y, width, height)
+      {
+        for(let i=X; i < X+width; i++)
+          world_matrix[i][Y] = '=';
+
+        for(let i=X; i < X+width; i++)
+          for(let j=Y+1; j < Y+height; j++)
+            world_matrix[i][j] = '#';
+      }
+
+      generateIsland(0,10,30,20);
+
+      class Tool
+      {
+        constructor(sprite, projectile)
+        {
+          this.sprite = sprite;
+          this.projectile = projectile;
+          
+          this.maxTravel = 1;
+          this.travel = 0;
+        }
+
+        project(direction, X, Y)
+        {
+          let projectile = Object.create(this);
+          
+          projectile.direction = direction;
+          projectile.X = X;
+          projectile.Y = Y;
+
+          world.push(projectile);
+        }
+
+        clear()
+        {
+          world_matrix[this.X][this.Y] = ' ';
+        }
+
+        step()
+        {
+          if(++this.travel <= this.maxTravel)
+            this.X += this.direction;
+          else
+          {
+            this.clear();
+            delete world[world.indexOf(this)];
+          }
+        }
+
+        render()
+        {
+          world_matrix[this.X][this.Y] = this.projectile;
+        }
+      }
+
+      class Entity
+      {
+        constructor(X, Y, width, height)
+        {
+            this.X = X;
+            this.Y = Y;
+
+            this.velocityX = 0;
+            this.velocityY = 0;
+
+            this.height = height;
+            this.width = width;
+
+            this.state = 'idle';
+            this.steps = 0;
+            this.direction = 0;
+
+            this.jumpHeight = -4;
+
+            this.tool = null;
+            this.loadSprites();
+        }
+
+        loadSprites()
+        {
+          this.sprites = {
+            "idle":
+              [["  o  ",
+                " /|\\ ",
+                " / \\ "]],
+
+
+            "running_right":
+              [["  o  ",
+                " /|\\ ",
+                " / \\ "],
+
+               ["  o  ",
+                " ||\\ ",
+                " /|  "],
+                            
+               ["  o  ",
+                " /|\\_ ",
+                " -|  "],
+                            
+               ["  o  ",
+                " ||  ",
+                " >|  "]],
+                            
+            "running_left":
+              [["  o  ",
+                " /|\\ ",
+                " / \\ "],
+              
+               ["  o  ",
+                " /|| ",
+                "  |\\ "],
+
+               ["  o  ",
+                "_/|\\ ",
+                "  |- "],
+
+               ["  o  ",
+                " ||  ",
+                "  |< "]],
+
+            "freefall":
+              [[" \\o/ ",
+                "  |  ",
+                " / \\ "]],
+
+            "jumping_right":
+             [["  o/ ",
+               " /|  ",
+               " //  "]],
+
+            "jumping_left":
+             [[" \\o  ",
+               "  |\\ ",
+               "  \\\\ "]],
+
+            "wallslide_right":
+            [["  o/ ",
+              " /|  ",
+              "  \\\\ "]],
+            
+            "wallslide_left":
+            [[" \\o  ",
+              "  |\\  ",
+              " //  "]],
+            
+            "trip_right":
+            [["  o  ",
+              " //  ",
+              " /   "]],
+
+            "trip_left":
+            [["  o  ",
+              "  \\\\ ",
+              "  \\  "]],
+
+            "idle_equipped_right":
+              [["  o  ",
+                " /|L.",
+                " / \\ "]],
+
+            "idle_equipped_left":
+              [["  o  ",
+                ".⅃|\\ ",
+                " / \\ "]],
+
+
+            "running_left_equipped":
+              [["  o  ",
+                ".⅃|\\  ",
+                " / \\ "],
+                              
+               ["  o  ",
+                "./|| ",
+                "  |\\ "],
+
+               ["  o  ",
+                ".⅃|\\ ",
+                " | - "],
+                
+               ["  o  ",
+                "./|  ",  
+                "  |< "]],
+
+            "running_right_equipped":
+              [["  o  ",
+                " /|L.",
+                " / \\ "],
+
+               ["  o  ",
+                " ||\\.",
+                " /|  "],
+                          
+               ["  o  ",
+                " /|L.",
+                " -|  "],
+                          
+               ["  o  ",
+                "  |\\.",
+                " >|  "]],
+
+            "punching_right":
+              [["  o  ",
+                " /|\\ ",
+                " / \\ "],
+                
+               ["  o  ",
+                "  |= ",
+                " / \\ "],
+
+               ["  o  ",
+                " /|-=",
+                " / \\ "]],
+             
+            "punching_left":
+              [["  o  ",
+                " /|\\ ",
+                " / \\ "],
+                
+               ["  o  ",
+                " =|  ",
+                " / \\ "],
+
+               ["  o  ",
+                "=-|\\ ",
+                " / \\ "]],
+              
+            "kicking_left":
+              [["  o  ",
+                " /|\\ ",
+                " / \\ "],
+               
+               ["  o  ",
+                " /|\\ ",
+                " ʽ \\ "],
+
+               ["  o  ",
+                " .|  ",
+                "-= \\ "],
+
+               ["  o  ",
+                " /|\\ ",
+                " ʽ \\ "]],
+
+            "kicking_right":
+              [["  o  ",
+                " /|\\ ",
+                " / \\ "],
+               
+               ["  o  ",
+                " /|\\ ",
+                " / , "],
+
+               ["  o  ",
+                " /|. ",
+                " / =-"],
+
+               ["  o  ",
+                " /|\\ ",
+                " / , "]],
+            
+            "use_tool_right":
+              [["  o  ",
+                " /|L.",
+                " / \\ "],
+               
+               ["  o  ",
+                " /|\\_",
+                " / \\ "],
+              
+               ["  o  ",
+                " /|=-",
+                " / \\ "]],
+              
+            "use_tool_left":
+              [["  o  ",
+                ".⅃|\\ ",
+                " / \\ "],
+                
+               ["  o  ",
+                "_/|\\ ",
+                " / \\ "],
+                
+               ["  o  ",
+                "-=|\\ ",
+                " / \\ "]]
+                
+          };
+        };
+
+        clear()
+        {
+          for(var i=0; i<this.width; i++)
+            for(var j=0; j<this.height; j++)
+              world_matrix[this.X+i][this.Y+j] = ' ';
+        }
+
+        render()
+        {
+          if(this.steps < this.sprites[this.state].length-1)
+            this.steps++;
+          else
+            this.steps = 0;
+
+          for(var i=0; i<this.height; i++)
+            for(var j=0; j<this.width; j++)
+              world_matrix[this.X+j][this.Y+i] =  this.sprites[this.state][this.steps][i][j];
+        }
+
+        gravitate()
+        {
+          if(this.velocityY < 1)
+            this.velocityY++;
+        }
+
+        jump()
+        {
+          //Check wallslides.
+          if(world_matrix[this.X-1][this.Y] != ' ')
+          {
+            this.velocityY = this.jumpHeight;
+            this.velocityX = 1;
+            return;
+          }
+          if(world_matrix[this.X+this.width][this.Y] != ' ')
+          {
+            this.velocityY = this.jumpHeight
+            this.velocityX = -1;
+            return;
+          }
+
+          //Check for ground.
+          for(let i=0; i<this.width; i++)
+            if(world_matrix[this.X+i][this.Y+this.height] != ' ')
+            {
+              this.velocityY = this.jumpHeight;
+              return;
+            }
+        }
+
+        fall()
+        {
+          if(world_matrix[this.X-1][this.Y] != ' ')
+            this.state = 'wallslide_left';
+          else if(world_matrix[this.X+this.width][this.Y] != ' ')
+            this.state = 'wallslide_right';
+          else
+            this.state = 'freefall';
+        }
+
+        step()
+        {
+          this.gravitate();
+
+          var moveX = true;
+          var moveY = true;
+
+          if(this.velocityX>0)
+            for(var i=0; i<this.height; i++)
+              if(world_matrix[this.X+this.width-1+this.velocityX][this.Y+i] != ' ')
+                moveX = false;
+
+          if(this.velocityX<0)
+            for(var i=0; i<this.height; i++)
+              if(world_matrix[this.X+this.velocityX][this.Y+i] != ' ')
+                moveX = false;
+
+          if(this.velocityY>0)
+            for(var i=0; i<this.width; i++)
+              if(world_matrix[this.X+i][this.Y+this.height-1+this.velocityY] != ' ')
+                moveY = false;
+
+          if(this.velocityY<0)
+            for(var i=0; i<this.width; i++)
+              if(world_matrix[this.X+i][this.Y+this.velocityY] != ' ')
+                moveY = false;
+
+          //TO-DO: Check diagonal points.
+
+          if(moveX && moveY)
+          {
+            if(this.velocityX<0 && this.velocityY<0)
+              if(world_matrix[this.X+this.velocityX][this.Y+this.velocityY] != ' ')
+                return;
+
+            if(this.velocityX>0 && this.velocityY<0)
+              if(world_matrix[this.X+this.width-1+this.velocityX][this.Y+this.velocityY] != ' ')
+                return;
+
+            if(this.velocityX<0 && this.velocityY>0)
+              if(world_matrix[this.X+this.velocityX][this.Y+this.height-1+this.velocityY] != ' ')
+                return;
+
+            if(this.velocityX>0 && this.velocityY>0)
+              if(world_matrix[this.X+this.width-1+this.velocityX][this.Y+this.height-1+this.velocityY] != ' ')
+                return;
+          }
+        
+          if(moveX)
+            this.X += this.velocityX;
+          if(moveY)
+            this.Y += this.velocityY;
+
+          if(!moveY && moveX)
+          {
+            let surfaces = 0;
+            for(let i=0; i<this.width && surfaces<2; i++)
+                if(world_matrix[this.X+i][this.Y+this.height] != ' ')
+                  surfaces++;
+
+            if(surfaces == 1)
+            {
+              if(world_matrix[this.X][this.Y+this.height] != ' ')
+              {
+                this.state = "trip_right";
+                this.X += 1;
+              }
+              else if(world_matrix[this.X+this.width][this.Y+this.height] != ' ')
+              {
+                this.state ="trip_left";
+                this.X -= 1;
+              }
+            }
+
+          }
+
+          if(moveY && this.velocityY > 0)
+            this.fall();
+          else if( (!this.velocityY || !moveY) && (!this.velocityX || !moveX) && this.state == "freefall")
+            this.state = "idle";
+        }
+
+        equip(tool)
+        {
+          if(tool instanceof Tool)
+          {
+            this.tool = tool;
+            var i;
+            for(i=0; i<this.sprites.running_right_equipped.length; i++)
+            {
+              this.sprites["running_right_equipped"][i][0] = this.sprites["running_right_equipped"][i][0].substring(0,4) + tool.sprite + ' ';
+              this.sprites["running_left_equipped"][i][0] = tool.sprite + this.sprites["running_left_equipped"][i][0].substring(1,6);
+            }
+            for(i=0; i<this.sprites.idle_equipped_right.length; i++)
+            {
+                this.sprites["idle_equipped_right"][i][0] = this.sprites["idle_equipped_right"][i][0].substring(0,4) + tool.sprite + ' ';
+                this.sprites["idle_equipped_left"][i][0] = tool.sprite + this.sprites["idle_equipped_left"][i][0].substring(1,6);
+            }
+
+            /*for(i=0; i<this.sprites.use_tool_right.length-1; i++)
+            {
+              this.sprites["use_tool_right"][i][0] = this.sprites["use_tool_right"][i][0].substring(0,4) + item + ' ';
+              this.sprites["use_tool_left"][i][0] = item + this.sprites["use_tool_left"][i][0].substring(1,6);
+            }
+            this.sprites["use_tool_right"][i][0] = this.sprites["use_tool_right"][i][0].substring(0,4) + '* ';
+            this.sprites["use_tool_left"][i][0] = '*' + this.sprites["use_tool_left"][i][0].substring(1,6);*/
+          }
+          else
+          {
+            alert('You can only equip tools.');
+          }
+        };
+
+        unequip()
+        {
+          this.tool = null;
+          for(var i=0; i<this.sprites.running_right_equipped.length; i++)
+          {
+            this.sprites["running_right_equipped"][i][0] = this.sprites["running_right_equipped"][i][0].substring(0,4) + '  ';
+            this.sprites["running_left_equipped"][i][0] = ' '+this.sprites["running_left_equipped"][i][0].substring(1,6);
+          }
+          for(var i=0; i<this.sprites.idle_equipped_right.length; i++)
+          {
+            this.sprites["idle_equipped_right"][i][0] = this.sprites["idle_equipped_right"][i][0].substring(0,4) + '  ';
+            this.sprites["idle_equipped_left"][i][0] = ' '+this.sprites["idle_equipped_left"][i][0].substring(1,6);
+          }
+          for(var i=0; i<this.sprites.use_tool_right.length; i++)
+          {
+            this.sprites["use_tool_right"][i][0] = this.sprites["use_tool_right"][i][0].substring(0,4) + '  ';
+            this.sprites["use_tool_left"][i][0] = ' '+this.sprites["use_tool_left"][i][0].substring(1,6);
+          }
+        };
+      }
+      
+      class Player extends Entity
+      {
+        constructor(X,Y)
+        {
+          super(X,Y,5,3);
+        }
+        
+        move(k)
+        {
+          switch(k)
+          {
+            case 65:
+              if(this.tool)
+                this.state = "running_left_equipped";
+              else
+                this.state = "running_left";
+
+              this.velocityX = -1;
+              this.direction = -1;
+              break;
+            case 68:
+              if(this.tool)
+                this.state = "running_right_equipped"
+              else
+                this.state = "running_right";
+
+              this.velocityX = 1;
+              this.direction = 1;
+              break;
+            case 87:
+              this.state = this.direction>0?"jumping_right":"jumping_left";
+              this.jump();
+              break;
+            case 83:
+              this.state = "freefall";
+              this.velocityY = 1;
+              break;
+            case 88:
+              this.state = this.direction>0?"punching_right":"punching_left";
+              this.velocityX = 0;
+              break;
+            case 67:
+              this.state = this.direction>0?"kicking_right":"kicking_left";
+              this.velocityX = 0;
+              break;
+            case 90:
+              if(this.tool)
+                this.unequip();
+              else
+                this.equip(new Tool('|','7'))
+              break;
+            case 32:
+              if(this.tool)
+              {
+                this.state = this.direction>0?"use_tool_right":"use_tool_left";
+                this.tool.project(this.direction, 
+                                  (this.direction > 0)? this.X+this.width : this.X-1, 
+                                  this.Y+1);
+
+              }
+              break;
+          }
+        };
+
+        cease(k)
+        {
+          switch(k)
+          {
+            case 65:
+              this.velocityX = 0;
+              break;
+            case 68:
+              this.velocityX = 0;
+              break;
+            case 87:
+              this.velocityY = 0;
+              break;
+            case 83:
+              this.velocityY = 0;
+              break;
+          }
+
+          if(this.velocityX == 0)
+          {
+            if(this.tool)
+            {
+              if(this.direction == -1)
+                this.state = "idle_equipped_left";
+              if(this.direction == 1)
+                this.state = "idle_equipped_right"
+            }
+            else
+              this.state = "idle";
+          }
+
+          if(this.velocityY==0 && this.velocityX != 0)
+            this.state = this.tool?(this.direction>0?"running_right_equipped":"running_left_equipped"):(this.direction>0?"running_right":"running_left");
+
+        };
+      }
+    
+      var myPlayer = new Player(1,0);
+
+      document.addEventListener("keydown", function(e)
+      {
+          myPlayer.move(e.keyCode);
+      });
+
+      document.addEventListener("keyup", function(e)
+      {
+          myPlayer.cease(e.keyCode);
+      });
+
+      var currentFontHeight = 16;
+      var currentFontWidth = 10;
+    
+      var Camera = {};
+      Camera.X = 0;
+      Camera.Y = 0;
+
+      var world = [];
+      world.myPlayer = myPlayer;
+
+      function draw()
+      {
+        var i = Camera.X;
+        var j = Camera.Y;
+        for(var x=2; x<canvas.width; x+=currentFontWidth)
+        {
+          j = Camera.Y;
+          for(var y=16; y<canvas.height; y+=currentFontHeight)
+          {
+            let tile = world_matrix[i][j];
+            switch(tile)
+            {
+              case '#':
+                ctx.fillStyle = 'rgb(74, 51, 28)';
+                break;
+              case '=':
+                ctx.fillStyle = 'rgb(27, 126, 60)';
+                break;
+              default:
+                ctx.fillStyle = 'rgb(0,0,0)';
+            }
+            ctx.fillText(tile,x,y);
+            j++
+          }
+          i++;
+        }
+      }
+
+      function update()
+      {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for(var obj in world)
+        {
+          world[obj].clear();
+          world[obj].step();
+          if(world[obj])
+            world[obj].render();
+        }
+        draw();
+      }
+
+      window.setInterval(update,150);
+     
+    </script>
+  </body>
+</html>

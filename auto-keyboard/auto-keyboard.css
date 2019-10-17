@@ -1,0 +1,57 @@
+#keyboard {
+	--key-width: 2em;
+	--key-spacing: .1em;
+	display: flex;
+	flex-direction: column;
+	counter-reset: key-color;
+}
+.keyboard-row {
+	display: inline-block;
+	text-align: center;
+}
+.key {
+	margin: var(--key-spacing);
+	height: var(--key-width);
+	counter-increment: key-color;
+	box-sizing: border-box;
+
+	border: none;
+	border-radius: .25em;
+
+	background: black;
+	color: white;
+	box-shadow: 2px 2px grey;
+
+	text-transform: uppercase;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: calc( var(--key-width)/2 );
+}
+.key.letter {
+	width: var(--key-width);
+	text-align: center;
+	vertical-align: middle;
+}
+.key:active, .key.pressed {
+	transition: border .1s background-color .2s box-shadow .2s;
+	border: 1px solid currentColor;
+	background: #303030;
+	box-shadow: 2px 2px 4px 2px grey;
+}
+.key:nth-of-type(1n):active, .key.pressed:nth-of-type(1n) {
+	color: red;
+}
+.key:nth-of-type(2n):active, .key.pressed:nth-of-type(2n) {
+	color: cyan;
+}
+.key:nth-of-type(3n):active, .key.pressed:nth-of-type(3n) {
+	color: lime;
+}
+.key[data-letter='space'] {
+	width: 14em;
+}
+
+@media screen and (max-device-width: 405px) {
+	#keyboard {
+		font-size: .75rem;
+	}
+}
