@@ -49,9 +49,3 @@
 .key[data-letter='space'] {
 	width: 14em;
 }
-
-@media screen and (max-device-width: 405px) {
-	#keyboard {
-		font-size: .75rem;
-	}
-}

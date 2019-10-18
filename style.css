@@ -11,6 +11,8 @@ body {
 	flex-flow: column nowrap;
 	overflow-y: scroll;
 	overflow-x: hidden;
+	scroll-padding: 0;
+	scroll-margin: 0;
 	scroll-snap-type: y mandatory;
 	scroll-behavior: smooth;
 }
@@ -22,7 +24,6 @@ body {
 	height: 100%;
 	box-sizing: border-box;
 	scroll-snap-align: start;
-	overflow: hidden;
 	background: whitesmoke;
 }
 
@@ -37,11 +38,12 @@ header > * {
 }
 
 nav {
-	position: absolute;
+	position: fixed;
 	padding: 1em;
 	text-align: center;
 	top: 0;
 	left: 0;
+	z-index: 2;
 }
 
 
@@ -82,7 +84,7 @@ address {
 	border: none;
 	padding: 1em 0 1em 0;
 	width: 100%;
-	font-size: 2rem;
+	font-size: 2em;
 	font-family: 'Times New Roman', Times, serif;
 	text-align: center;
 	text-transform: capitalize;
@@ -96,7 +98,9 @@ address {
 
 a {
 	text-decoration: none;
+	
 	font-style: normal;
+	font-family: Arial, Helvetica, sans-serif;
 	color: darkslategrey;
 }
 
@@ -116,4 +120,10 @@ iframe {
 video {
 	border: none;
 	border-radius: 1em;
+}
+
+@media (orientation: portrait) {
+	body {
+		font-size: 2em;
+	}
 }

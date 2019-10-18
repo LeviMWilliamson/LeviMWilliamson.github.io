@@ -1,26 +1,21 @@
 <!doctype html>
 <html>
-
 <head>
 	<meta charset='utf-8' />
-	<title>Keyboard</title>
+	<title>Levi Williamson</title>
 	<link rel='stylesheet' href='style.css' />
 </head>
-
 <body>
 	<div class='container'>
-
 		<header class='page'>
 			<nav>
 				<a href='#about'>About</a> |
 				<a href='#projects'>Projects</a>
 			</nav>
-
 			<section>
 				<input id='author-name' />
 				<auto-keyboard id='auto-keyboard'></auto-keyboard>
 			</section>
-
 			<address>
 				<h2>Software Development</h2>
 				<p>
@@ -43,7 +38,11 @@
 				</p>
 				<p>
 					I'm Levi. I'm a 3rd-year Software Engineering student at the University of Victoria. I do fullstack web
-					development, and am currently looking for new employment opportunities. Check out my <a href='#projects'>projects</a>!
+					development, and am currently looking for new employment opportunities. Check out my 
+					<a href='#projects'> 
+						projects!
+						<img src='./assets/link-24px.svg'/>
+					</a>
 				</p>
 			</section>
 		</article>
@@ -55,13 +54,28 @@
 					<em>Navigate games with WASD</em>
 					<ul>
 						<li>
-							<a href='#chess'>Chess - Work in Progress</a>
+							<a href='https://levimwilliamson.github.io/chess'>Chess (Work in Progress)</a>
+							-
+							<a href='https://github.com/LeviMWilliamson/chess'>
+								Source
+								<img src='./assets/link-24px.svg'/>
+							</a>
 						</li>
 						<li>
-							<a href='#platformer'>Platformer Demo with Text-Based Graphics</a>
+							<a href='https//levimwilliamson.github.io/text-platformer'>Platformer Demo with Text-Based Graphics</a>
+							-
+							<a href='https://github.com/LeviMWilliamson/text-platformer'>
+								Source
+								<img src='./assets/link-24px.svg'/>
+							</a>
 						</li>
 						<li>
-							<a href='#collision-engine'>2D Collision Detection Engine using Separating Axis Theorem</a>
+							<a href='https://levimwilliamson.github.io/2d-collision-engine'>2D Collision Detection Engine using Separating Axis Theorem</a>
+							-
+							<a href='https://github.com/LeviMWilliamson/collision-engine'>
+								Source
+								<img src='./assets/link-24px.svg'/>
+							</a>
 						</li>
 					</ul>
 				</section>
@@ -69,38 +83,13 @@
 				<section>
 					<ul>
 						<li>
-							<a href='#ir-robot'>Infrared Seeking Robot</a>
+							<a href='./routes/ir-robot.html'>Infrared Seeking Robot</a>
 						</li>
 						<li>
-							<a href='#tracker-robot'>Solar Panel Positioning Robot</a>
+							<a href='./routes/tracker-robot.html'>Solar Panel Positioning Robot</a>
 						</li>
 					</ul>
 				</section>
-			</section>
-		</article>
-
-		<iframe id='chess' src='https://levimwilliamson.github.io/chess/' class='page'></iframe>
-		<iframe id='platformer' src='projects/char.html' class='page'></iframe>
-		<iframe id='collision-engine' src='projects/polygon.html' class='page'></iframe>
-		
-		<article id='ir-robot' class='page'>
-			<h1>Infrared Seeking Robot</h1>
-			<section>
-				<video width="240" height="424" controls>
-					<source src="./assets/cablerobot.mp4" type="video/mp4">
-					Your browser does not support the video tag.
-				</video>
-				
-			</section>
-		</article>
-
-		<article id='tracker-robot' class='page'>
-			<h1>Solar Panel Calibrator</h1>
-			<section>
-				<video width="480" height="270" controls>
-					<source src="./assets/tracker.mp4" type="video/mp4">
-					Your browser does not support the video tag.
-				</video>
 			</section>
 		</article>
 	</div>
@@ -147,25 +136,6 @@
 		</div>
 	</template>
 	<script src='./auto-keyboard/auto-keyboard.js'></script>
-	<script>
-		const autokeyboard = document.getElementById('auto-keyboard')
-		const authorName = document.getElementById('author-name')
-		authorName.value = ''
-		autokeyboard.addEventListener('autokey', event => authorName.value += event.detail)
-		authorName.addEventListener('keydown', event => autokeyboard.tryHighlightKey(event.key.toLowerCase()))
-		authorName.addEventListener('keyup', event => autokeyboard.tryLowlightKey(event.key.toLowerCase()))
-
-		let nameIterator = 'levi williamson'[Symbol.iterator]()
-		function typeName() {
-			let letterIteration = nameIterator.next()
-			if (letterIteration.done)
-				clearInterval(typeInterval)
-			else
-				autokeyboard.typeKey(letterIteration.value)
-		}
-		let typeInterval = setInterval(typeName, 150)
-
-	</script>
+	<script src='main.js'></script>
 </body>
-
 </html>
