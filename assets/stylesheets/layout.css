@@ -1,0 +1,26 @@
+h1, h2, h3, h4, h5, h6, a { font-family: monospace; }
+
+a {
+	text-decoration: none;
+	color: black;
+}
+
+ul { list-style-type: '—	'; }
+
+body {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 1rem;
+	display: flex;
+	min-height: 100vh;
+	flex-direction: column;
+}
+
+.local-path::before { content: './'; }
+
+.environment-variable::before { content: '$'; }
+.environment-variable { text-transform: uppercase; }
+
+.home-alias::before { content: '~/'; }
+
+/*.local-path::before, .home-alias::before, .environment-variable::before { color: blue; }*/
